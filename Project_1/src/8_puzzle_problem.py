@@ -1,8 +1,8 @@
 import numpy as np
 
 # Function to find the index of the blank tile for a given state
-def blank_tile_location(k):
-	node_state = explored_nodes[k][0]
+def blank_tile_location(node):
+	node_state = node
 	for i in range(len(node_state)):
 		for j in range(len(node_state[i])):
 			if node_state[i][j] == 0:
@@ -13,7 +13,7 @@ def blank_tile_location(k):
 
 # Functions to move in up,down,left & right directions
 def action_move_left(k, i, j):
-	node_state = explored_nodes[k][0]
+	node_state = k
 	action = 'Move left'
 	parent_node = node_state.copy()
 	current_node = node_state.copy()
@@ -23,7 +23,7 @@ def action_move_left(k, i, j):
 	
 
 def action_move_right(k, i, j):
-	node_state = explored_nodes[k][0]
+	node_state = k
 	action = 'Move right'
 	parent_node = node_state.copy()
 	current_node = node_state.copy()
@@ -33,7 +33,7 @@ def action_move_right(k, i, j):
 	
 
 def action_move_up(k, i, j):
-	node_state = explored_nodes[k][0]
+	node_state = k
 	action = 'Move up'
 	parent_node = node_state.copy()
 	current_node = node_state.copy()
@@ -43,7 +43,7 @@ def action_move_up(k, i, j):
 	
 
 def action_move_down(k, i, j):
-	node_state = explored_nodes[k][0]
+	node_state = k
 	action = 'Move down'
 	parent_node = node_state.copy() 
 	current_node = node_state.copy()
@@ -62,51 +62,34 @@ def add_node(k5, node_state, parent_node, action):
 		explored_nodes[k5] = [node_state, parent_node, action]
 
 # Brute Force Search Recursive Function
-def child_generator(node_ind, k):
-	global glob 
-	glob = False
+def child_generator(node):	
 	child_nodes = []
-	i,j = blank_tile_location(node_ind)
+	i,j = blank_tile_location(node)
 	if j>0 and j<=2:
-		a1, p1, c1= action_move_left(node_ind, i, j)
-		if np.array_equal(c1, goal_node) == True:
-			glob == True
-		k = k+1
-		i1 = k
-		add_node(i1, c1, p1, a1)
-		child_nodes.append(i1)
+		a1, p1, c1= action_move_left(node, i, j)
+		#add_node(i1, c1, p1, a1)
+		child_nodes.append(c1)
 	if j>=0 and j<2:
-		a2, p2, c2= action_move_right(node_ind, i, j)
-		if np.array_equal(c2, goal_node) == True:
-			glob == True
-		k = k+1
-		i2 = k
-		add_node(i2, c2, p2, a2)
-		child_nodes.append(i2)
+		a2, p2, c2= action_move_right(node, i, j)
+		#add_node(i2, c2, p2, a2)
+		child_nodes.append(c2)
 	if i>0 and i<=2:
-		a3, p3, c3= action_move_up(node_ind, i, j)
-		if np.array_equal(c3, goal_node) == True:
-			glob == True
-		k = k+1
-		i3 = k
-		add_node(i3, c3, p3, a3)
-		child_nodes.append(i3)
+		a3, p3, c3= action_move_up(node, i, j)
+		#add_node(i3, c3, p3, a3)
+		child_nodes.append(c3)
 	if i>=0 and i<2:
-		a4, p4, c4= action_move_down(node_ind, i, j)
-		if np.array_equal(c4, goal_node) == True:
-			glob == True
-		k = k+1
-		i4 = k
-		add_node(i4, c4, p4, a4)
-		child_nodes.append(i4)
+		a4, p4, c4= action_move_down(node, i, j)
+		#add_node(i4, c4, p4, a4)
+		child_nodes.append(c4)
 
-	parent_child[node_ind] = child_nodes
-	return parent_child, k, glob
+	return child_nodes
 
 # Asking the user to enter the start node
 node_state_1 = []
+bfs = []
 global k 
-i2_count = 1
+glob = False
+i2_count = []
 k=0
 parent_child = {}
 print('Enter the start node elementwise in row order: ')
@@ -123,39 +106,56 @@ goal_node = np.array([[1,2,3], [4,5,6], [7,8,0]])
 print('The goal node to reach is: ', goal_node)
 print('')
 
-# Displaying the start node infooal
+# Displaying the start node info
 explored_nodes = {k: [node_state_1, 'None', 'None']}
 print('The start node info is: ', explored_nodes)
 print('')
 
-PC, kx, glob = child_generator(k, k)
-
-print('The explored indices are:', PC)
 # Brute Force Search
+bfs.append(node_state_1)
 
-PC_len = len(PC.keys())
+while len(bfs) > 0:
+	c1 = bfs[0]
+	print('c1 is:', c1)
+	print('')
+	if (c1 == goal_node).all():
+		break
+	else:
+		bfs.pop(0)
+		childs = child_generator(c1)
+		for i in childs:
+			bfs.append(i)
+	
+	
 
+
+
+
+"""
 while glob == False:
+	#print('PC keys:',list(PC.keys()))
+	#print('Hello!!!!!!!!!!!')
+	#print('Explored Nodes:', explored_nodes.keys())
 	start = list(PC.keys())[0]		
 	#print('Start is:', start)
-	for i in range(start,PC_len):
-		if i2_count == int(2):
-			break		
-		print('I is:', i == 2)
-		for j in parent_child[i]:
-			print('J is:', j)
-			PC, kx, glob = child_generator(j,kx)
-		print('Depth till now:', parent_child)
-		print('')
-		if i == 2:
-			i2_count = int(i2_count+1)
-
+	for i in range(start,PC_len):		
+		if (explored_nodes[i][0] == goal_node).all():
+			glob == True
+		print('I is:', i)
+		if (i in parent_child.keys()) == True:		
+			for j in parent_child[i]:
+				PC, kx= child_generator(j,kx)
+			print('Depth till now:', parent_child)
+			print('')
+		else:
+			print('Sorry key does not exist')
+			continue
 	key = list(PC.keys())
 	del PC[key[0]]
 	#print (PC)
 	PC_len = len(PC.keys())
 	#print(PC_len)
-
+"""
 		
 print('Goal node found!!')
  	
